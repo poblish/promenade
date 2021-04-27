@@ -1,6 +1,8 @@
 # Promenade
 
-A simplified, and slightly more opinionated Prometheus client API for Golang.
+@ https://pkg.go.dev/github.com/poblish/promenade
+
+**A simplified, and slightly more opinionated Prometheus client API for Golang.**
 
 The goal is to encourage much greater metric use within a project without excessive lines of code, and with much of the configurability and flexibility of the [official Prometheus client](https://pkg.go.dev/github.com/prometheus/client_golang/prometheus) API tucked away.
 
