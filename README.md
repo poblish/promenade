@@ -31,6 +31,10 @@ func main() {
     // Increment {type:cat, breed:persian} labels for prefix_animals
     metrics.CounterWithLabels("animals", []string{"type", "breed"}).IncLabel("cat", "persian")
 
+    // Gauges
+	metrics.Gauge("g").SetValue(101)
+	metrics.Gauge("g").Dec()
+
     // Increment {error_type:bad} label for prefix_errors
     metrics.Error("bad")
 
