@@ -15,9 +15,9 @@ Registration happens on first use. All metric names are normalised and (by defau
 ```golang
 
 import (
-	"fmt"
+    "fmt"
 
-	promenade "github.com/poblish/promenade/api"
+    promenade "github.com/poblish/promenade/api"
 )
 
 func main() {
@@ -43,22 +43,22 @@ func main() {
 }
 
 func histograms(metrics *promenade.PrometheusMetrics) {
-	times := metrics.HistogramForResponseTime("latency")
+    times := metrics.HistogramForResponseTime("latency")
     times.Update(0.03)
     times.Update(0.05)
 }
 
 func histogram_buckets(metrics *promenade.PrometheusMetrics) {
-	ages := metrics.Histogram("population_by_age", []float64{18, 25, 25, 45, 55, 65})
+    ages := metrics.Histogram("population_by_age", []float64{18, 25, 25, 45, 55, 65})
     ages.Update(21)
     ages.Update(45)
     ages.Update(81)
 }
 
 func timedMethod(metrics *promenade.PrometheusMetrics) {
-	defer metrics.Timer("calculate Pi")()  // Start the timer, observe on exit
+    defer metrics.Timer("calculate Pi")()  // Start the timer, observe on exit
 
-	fmt.Println("Start doing it...")
+    fmt.Println("Start doing it...")
     // ...
 }
 
