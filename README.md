@@ -48,7 +48,7 @@ func main() {
     timedMethod(&metrics)
 
     // Tests
-    testMethods()
+    testMethods(&metrics)
 }
 
 func histograms(metrics *promenade.PrometheusMetrics) {
