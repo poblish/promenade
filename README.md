@@ -8,6 +8,8 @@ The goal is to encourage much greater metric use within a project without excess
 
 Registration happens on first use. All metric names are normalised and (by default) reduced to lowercase.
 
+Benchmarks are provided.
+
 ----
 
 ## Examples
