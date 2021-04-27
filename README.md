@@ -31,7 +31,7 @@ func main() {
     // Increment {type:cat, breed:persian} labels for prefix_animals
     metrics.CounterWithLabels("animals", []string{"type", "breed"}).IncLabel("cat", "persian")
 
-    // Increment {error_type:bade} label for prefix_errors
+    // Increment {error_type:bad} label for prefix_errors
     metrics.Error("bad")
 
     // Histograms
@@ -40,6 +40,9 @@ func main() {
 
     // Timers
     timedMethod(&metrics)
+
+    // Tests
+    testMethods()
 }
 
 func histograms(metrics *promenade.PrometheusMetrics) {
@@ -62,4 +65,10 @@ func timedMethod(metrics *promenade.PrometheusMetrics) {
     // ...
 }
 
+func testMethods(metrics *promenade.PrometheusMetrics) {
+    metrics.TestHelper().Clear()   // reset; start with new registry
+    metrics.TestHelper().Gather()  // gather all registered Collectors 
+    metrics.TestHelper().MetricNames()
+    // etc.
+}
 ```
