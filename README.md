@@ -1,6 +1,8 @@
 # Promenade
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/poblish/promenade.svg)](https://pkg.go.dev/github.com/poblish/promenade)
+[![Build Status](https://travis-ci.org/poblish/promenade.svg?branch=master)](https://travis-ci.org/poblish/promenade)
+[![codecov](https://codecov.io/gh/poblish/promenade/branch/master/graph/badge.svg?token=mmuq7NfHLd)](https://codecov.io/gh/poblish/promenade)
 
 **A simplified, and slightly more opinionated Prometheus client API for Golang.**
 
