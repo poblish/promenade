@@ -162,9 +162,51 @@ func TestSummary(t *testing.T) {
 	s.Observe(3.834344)
 
 	m := findMetric("blah_mysummary", metrics.gatherOK(t))
-	assert.Equal(t, len(m.Metric), 1)
+	assert.Equal(t, 1, len(m.Metric))
 	assert.Equal(t, "summary:<sample_count:7 sample_sum:19.634344000000002 quantile:<quantile:0.5 value:2.9 > quantile:<quantile:0.75 value:3.3 > quantile:<quantile:0.9 value:3.834344 > quantile:<quantile:0.95 value:3.834344 > quantile:<quantile:0.99 value:3.834344 > quantile:<quantile:0.999 value:3.834344 > >",
 		strings.TrimSpace(m.Metric[0].String()))
+}
+
+func TestSummaryWithLabel(t *testing.T) {
+	metrics := NewMetrics(MetricOpts{Registry: prometheus.NewRegistry(), MetricNamePrefix: "BLAH"})
+
+	s := metrics.SummaryWithLabel("animal facts", "animal")
+	s.Observe(1.0, "cat")
+	s.Observe(2.5, "cat")
+	s.Observe(2.6, "dog")
+	s.Observe(2.0, "cat")
+	s.Observe(3.2, "ant")
+	s.Observe(3.3, "dog")
+	s.Observe(3.834344, "bear")
+
+	m := findMetric("blah_animal_facts", metrics.gatherOK(t))
+	assert.Equal(t, 4, len(m.Metric))
+	assert.Equal(t, "label:<name:\"animal\" value:\"ant\" > summary:<sample_count:1 sample_sum:3.2 quantile:<quantile:0.5 value:3.2 > quantile:<quantile:0.75 value:3.2 > quantile:<quantile:0.9 value:3.2 > quantile:<quantile:0.95 value:3.2 > quantile:<quantile:0.99 value:3.2 > quantile:<quantile:0.999 value:3.2 > >",
+		strings.TrimSpace(m.Metric[0].String()))
+	assert.Equal(t, "label:<name:\"animal\" value:\"bear\" > summary:<sample_count:1 sample_sum:3.834344 quantile:<quantile:0.5 value:3.834344 > quantile:<quantile:0.75 value:3.834344 > quantile:<quantile:0.9 value:3.834344 > quantile:<quantile:0.95 value:3.834344 > quantile:<quantile:0.99 value:3.834344 > quantile:<quantile:0.999 value:3.834344 > >",
+		strings.TrimSpace(m.Metric[1].String()))
+	assert.Equal(t, "label:<name:\"animal\" value:\"cat\" > summary:<sample_count:3 sample_sum:5.5 quantile:<quantile:0.5 value:2 > quantile:<quantile:0.75 value:2.5 > quantile:<quantile:0.9 value:2.5 > quantile:<quantile:0.95 value:2.5 > quantile:<quantile:0.99 value:2.5 > quantile:<quantile:0.999 value:2.5 > >",
+		strings.TrimSpace(m.Metric[2].String()))
+	assert.Equal(t, "label:<name:\"animal\" value:\"dog\" > summary:<sample_count:2 sample_sum:5.9 quantile:<quantile:0.5 value:2.6 > quantile:<quantile:0.75 value:3.3 > quantile:<quantile:0.9 value:3.3 > quantile:<quantile:0.95 value:3.3 > quantile:<quantile:0.99 value:3.3 > quantile:<quantile:0.999 value:3.3 > >",
+		strings.TrimSpace(m.Metric[3].String()))
+}
+
+func TestSummaryWithLabels(t *testing.T) {
+	metrics := NewMetrics(MetricOpts{Registry: prometheus.NewRegistry(), MetricNamePrefix: "BLAH"})
+
+	s := metrics.SummaryWithLabels("animal breeds", []string{"animal", "breed"})
+	s.Observe(1.0, "cat", "tabby")
+	s.Observe(2.5, "cat", "siamese")
+	s.Observe(2.6, "dog", "mutt")
+
+	m := findMetric("blah_animal_breeds", metrics.gatherOK(t))
+	assert.Equal(t, 3, len(m.Metric))
+	assert.Equal(t, "label:<name:\"animal\" value:\"cat\" > label:<name:\"breed\" value:\"siamese\" > summary:<sample_count:1 sample_sum:2.5 quantile:<quantile:0.5 value:2.5 > quantile:<quantile:0.75 value:2.5 > quantile:<quantile:0.9 value:2.5 > quantile:<quantile:0.95 value:2.5 > quantile:<quantile:0.99 value:2.5 > quantile:<quantile:0.999 value:2.5 > >",
+		strings.TrimSpace(m.Metric[0].String()))
+	assert.Equal(t, "label:<name:\"animal\" value:\"cat\" > label:<name:\"breed\" value:\"tabby\" > summary:<sample_count:1 sample_sum:1 quantile:<quantile:0.5 value:1 > quantile:<quantile:0.75 value:1 > quantile:<quantile:0.9 value:1 > quantile:<quantile:0.95 value:1 > quantile:<quantile:0.99 value:1 > quantile:<quantile:0.999 value:1 > >",
+		strings.TrimSpace(m.Metric[1].String()))
+	assert.Equal(t, "label:<name:\"animal\" value:\"dog\" > label:<name:\"breed\" value:\"mutt\" > summary:<sample_count:1 sample_sum:2.6 quantile:<quantile:0.5 value:2.6 > quantile:<quantile:0.75 value:2.6 > quantile:<quantile:0.9 value:2.6 > quantile:<quantile:0.95 value:2.6 > quantile:<quantile:0.99 value:2.6 > quantile:<quantile:0.999 value:2.6 > >",
+		strings.TrimSpace(m.Metric[2].String()))
 }
 
 func TestRegisterUnderlyingMetric(t *testing.T) {
@@ -284,8 +326,29 @@ func TestTimersRealTime(t *testing.T) {
 	// Can't validate times
 }
 
+func TestLabelledTimersControlled(t *testing.T) {
+	metrics := PrometheusMetricsImpl{registry: prometheus.NewRegistry(),
+		metricNamePrefix: "xx_",
+		registrations:    newMetricRegistrations(),
+		normalisedNames:  newNormalisedNames(),
+		timerFactory:     &controlledTimerFactory{defaultExpectation: 2 * time.Second}}
+
+	timedMethodWithLabel(&metrics)
+	timedMethodWithLabel(&metrics)
+
+	m := findMetric("xx_animal_timer", metrics.gatherOK(t))
+	assert.Equal(t, len(m.Metric), 1)
+	assert.Equal(t, "label:<name:\"animal\" value:\"cat\" > summary:<sample_count:2 sample_sum:4 quantile:<quantile:0.5 value:2 > quantile:<quantile:0.75 value:2 > quantile:<quantile:0.9 value:2 > quantile:<quantile:0.95 value:2 > quantile:<quantile:0.99 value:2 > quantile:<quantile:0.999 value:2 > >",
+		strings.TrimSpace(m.Metric[0].String()))
+}
+
 func timedMethod(metrics PrometheusMetrics) {
 	defer metrics.Timer("Timer")()
+	fmt.Println("Whatever it is we're timing")
+}
+
+func timedMethodWithLabel(metrics PrometheusMetrics) {
+	defer metrics.TimerWithLabel("animal_timer", "animal", "cat")()
 	fmt.Println("Whatever it is we're timing")
 }
 

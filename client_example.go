@@ -16,6 +16,8 @@ func main() {
 	metrics.HistogramForResponseTime("h")
 	metrics.Histogram("hb", []float64{1, 10})
 	metrics.Summary("s")
+	metrics.SummaryWithLabel("populations", "city").Observe(8000000, "London")
+	metrics.SummaryWithLabels("animal sizes", []string{"type", "breed"}).Observe(4.5, "cat", "siamese")
 	timedMethod(&metrics)
 
 	fmt.Println(metrics.TestHelper().MetricNames())

@@ -28,7 +28,10 @@ type PrometheusMetrics interface {
 	Histogram(name string, buckets []float64, optionalDesc ...string) HistogramFacade
 	HistogramForResponseTime(name string, optionalDesc ...string) HistogramFacade
 	Summary(name string, optionalDesc ...string) SummaryFacade
+	SummaryWithLabel(name string, labelName string, optionalDesc ...string) LabelledSummaryFacade
+	SummaryWithLabels(name string, labelNames []string, optionalDesc ...string) LabelledSummaryFacade
 	Timer(Name string) func() time.Duration
+	TimerWithLabel(Name string, labelName string, labelValue string) func() time.Duration
 }
 
 type PrometheusMetricsImpl struct {
@@ -73,6 +76,7 @@ const (
 	TypeCounterLabels = iota << 2
 	TypeGauge         = iota << 2
 	TypeSummary       = iota << 2
+	TypeSummaryLabels = iota << 2
 	TypeHistogram     = iota << 2
 )
 
