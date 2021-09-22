@@ -6,12 +6,12 @@ type CounterFacade struct {
 	promMetric prometheus.Counter
 }
 
-func (p *PrometheusMetrics) buildCounter(builder MetricBuilder, name string, optionalDesc []string) CounterFacade {
+func (p *PrometheusMetricsImpl) buildCounter(builder MetricBuilder, name string, optionalDesc []string) CounterFacade {
 	return p.getOrAdd(name, TypeCounter, builder, optionalDesc).(CounterFacade)
 }
 
-func (p *PrometheusMetrics) Counter(name string, optionalDesc ...string) CounterFacade {
-	return p.buildCounter(func(p *PrometheusMetrics, fullMetricName string, fullDescription string) interface{} {
+func (p *PrometheusMetricsImpl) Counter(name string, optionalDesc ...string) CounterFacade {
+	return p.buildCounter(func(p *PrometheusMetricsImpl, fullMetricName string, fullDescription string) interface{} {
 		internal := prometheus.NewCounter(prometheus.CounterOpts{Name: fullMetricName, Help: fullDescription})
 		p.RegisterMetric(internal)
 		return CounterFacade{promMetric: internal}

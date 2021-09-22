@@ -6,12 +6,12 @@ type GaugeFacade struct {
 	promMetric prometheus.Gauge
 }
 
-func (p *PrometheusMetrics) buildGauge(builder MetricBuilder, name string, optionalDesc []string) GaugeFacade {
+func (p *PrometheusMetricsImpl) buildGauge(builder MetricBuilder, name string, optionalDesc []string) GaugeFacade {
 	return p.getOrAdd(name, TypeGauge, builder, optionalDesc).(GaugeFacade)
 }
 
-func (p *PrometheusMetrics) Gauge(name string, optionalDesc ...string) GaugeFacade {
-	return p.buildGauge(func(p *PrometheusMetrics, fullMetricName string, fullDescription string) interface{} {
+func (p *PrometheusMetricsImpl) Gauge(name string, optionalDesc ...string) GaugeFacade {
+	return p.buildGauge(func(p *PrometheusMetricsImpl, fullMetricName string, fullDescription string) interface{} {
 		internal := prometheus.NewGauge(prometheus.GaugeOpts{Name: fullMetricName, Help: fullDescription})
 		p.RegisterMetric(internal)
 		return GaugeFacade{promMetric: internal}

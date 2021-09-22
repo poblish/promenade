@@ -8,10 +8,10 @@ import (
 )
 
 type TestHelper struct {
-	metrics *PrometheusMetrics
+	metrics *PrometheusMetricsImpl
 }
 
-func (p *PrometheusMetrics) TestHelper() *TestHelper {
+func (p *PrometheusMetricsImpl) TestHelper() *TestHelper {
 	return &TestHelper{metrics: p}
 }
 

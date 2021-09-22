@@ -3,6 +3,7 @@ package api
 import (
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -19,7 +20,18 @@ type MetricOpts struct {
 	CaseSensitiveMetricNames bool // true is faster, default is Insensitive
 }
 
-type PrometheusMetrics struct {
+type PrometheusMetrics interface {
+	Counter(name string, optionalDesc ...string) CounterFacade
+	CounterWithLabel(name string, labelName string, optionalDesc ...string) LabelledCounterFacade
+	CounterWithLabels(name string, labelNames []string, optionalDesc ...string) LabelledCounterFacade
+	Error(name string) ErrorCounter
+	Histogram(name string, buckets []float64, optionalDesc ...string) HistogramFacade
+	HistogramForResponseTime(name string, optionalDesc ...string) HistogramFacade
+	Summary(name string, optionalDesc ...string) SummaryFacade
+	Timer(Name string) func() time.Duration
+}
+
+type PrometheusMetricsImpl struct {
 	registry         prometheus.Registerer
 	metricNamePrefix string
 	descriptions     MetricDescriptions
@@ -32,7 +44,7 @@ type PrometheusMetrics struct {
 	normalisedNames          normalisedNames
 }
 
-func NewMetrics(opts MetricOpts) PrometheusMetrics {
+func NewMetrics(opts MetricOpts) PrometheusMetricsImpl {
 	if opts.PrefixSeparator == "" {
 		opts.PrefixSeparator = "_" // as per Prometheus lib standard
 	}
@@ -46,7 +58,7 @@ func NewMetrics(opts MetricOpts) PrometheusMetrics {
 		opts.Registry = prometheus.DefaultRegisterer
 	}
 
-	return PrometheusMetrics{registry: opts.Registry,
+	return PrometheusMetricsImpl{registry: opts.Registry,
 		metricNamePrefix:         prefix,
 		descriptions:             opts.Descriptions,
 		registrations:            newMetricRegistrations(),
@@ -87,13 +99,13 @@ func newNormalisedNames() normalisedNames {
 	return normalisedNames{internal: make(map[string]string)}
 }
 
-func (p *PrometheusMetrics) RegisterMetric(metric prometheus.Collector) {
+func (p *PrometheusMetricsImpl) RegisterMetric(metric prometheus.Collector) {
 	p.registry.Register(metric)
 }
 
-type MetricBuilder func(p *PrometheusMetrics, name string, desc string) interface{}
+type MetricBuilder func(p *PrometheusMetricsImpl, name string, desc string) interface{}
 
-func (p *PrometheusMetrics) getOrAdd(name string, metricType int, builder MetricBuilder, desc []string) metricFacade {
+func (p *PrometheusMetricsImpl) getOrAdd(name string, metricType int, builder MetricBuilder, desc []string) metricFacade {
 	var metricKey string
 
 	if p.caseSensitiveMetricNames {
@@ -119,32 +131,32 @@ func (p *PrometheusMetrics) getOrAdd(name string, metricType int, builder Metric
 	return newMetric
 }
 
-func (p *PrometheusMetrics) getNormalisedName(name string) (string, bool) {
+func (p *PrometheusMetricsImpl) getNormalisedName(name string) (string, bool) {
 	p.normalisedNames.RLock()
 	defer p.normalisedNames.RUnlock()
 	val, ok := p.normalisedNames.internal[name]
 	return val, ok
 }
-func (p *PrometheusMetrics) storeNormalisedName(name string, value string) {
+func (p *PrometheusMetricsImpl) storeNormalisedName(name string, value string) {
 	p.normalisedNames.Lock()
 	defer p.normalisedNames.Unlock()
 	p.normalisedNames.internal[name] = value
 }
 
-func (p *PrometheusMetrics) getRegistration(key string) (metricEntry, bool) {
+func (p *PrometheusMetricsImpl) getRegistration(key string) (metricEntry, bool) {
 	p.registrations.RLock()
 	defer p.registrations.RUnlock()
 	val, ok := p.registrations.internal[key]
 	return val, ok
 }
 
-func (p *PrometheusMetrics) storeRegistration(key string, value metricEntry) {
+func (p *PrometheusMetricsImpl) storeRegistration(key string, value metricEntry) {
 	p.registrations.Lock()
 	defer p.registrations.Unlock()
 	p.registrations.internal[key] = value
 }
 
-func (p *PrometheusMetrics) bestDescription(name string, desc []string) string {
+func (p *PrometheusMetricsImpl) bestDescription(name string, desc []string) string {
 	var description = ""
 	if len(desc) > 0 {
 		description = desc[0]
@@ -160,7 +172,7 @@ func (p *PrometheusMetrics) bestDescription(name string, desc []string) string {
 	return description
 }
 
-func (p *PrometheusMetrics) getFullMetricName(name string) string {
+func (p *PrometheusMetricsImpl) getFullMetricName(name string) string {
 	return p.metricNamePrefix + name
 }
 

@@ -6,16 +6,16 @@ type LabelledCounterFacade struct {
 	promMetric *prometheus.CounterVec
 }
 
-func (p *PrometheusMetrics) buildLabelledCounter(builder MetricBuilder, name string, optionalDesc []string) LabelledCounterFacade {
+func (p *PrometheusMetricsImpl) buildLabelledCounter(builder MetricBuilder, name string, optionalDesc []string) LabelledCounterFacade {
 	return p.getOrAdd(name, TypeCounterLabels, builder, optionalDesc).(LabelledCounterFacade)
 }
 
-func (p *PrometheusMetrics) CounterWithLabel(name string, labelName string, optionalDesc ...string) LabelledCounterFacade {
+func (p *PrometheusMetricsImpl) CounterWithLabel(name string, labelName string, optionalDesc ...string) LabelledCounterFacade {
 	return p.CounterWithLabels(name, []string{labelName}, optionalDesc...)
 }
 
-func (p *PrometheusMetrics) CounterWithLabels(name string, labelNames []string, optionalDesc ...string) LabelledCounterFacade {
-	return p.buildLabelledCounter(func(p *PrometheusMetrics, fullMetricName string, fullDescription string) interface{} {
+func (p *PrometheusMetricsImpl) CounterWithLabels(name string, labelNames []string, optionalDesc ...string) LabelledCounterFacade {
+	return p.buildLabelledCounter(func(p *PrometheusMetricsImpl, fullMetricName string, fullDescription string) interface{} {
 		internal := prometheus.NewCounterVec(prometheus.CounterOpts{Name: fullMetricName, Help: fullDescription}, labelNames)
 		p.RegisterMetric(internal)
 		return LabelledCounterFacade{promMetric: internal}

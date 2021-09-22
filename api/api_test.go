@@ -17,7 +17,7 @@ func TestCounter(t *testing.T) {
 	doTestCounter(t, &metrics)
 }
 
-func doTestCounter(t *testing.T, metrics *PrometheusMetrics) {
+func doTestCounter(t *testing.T, metrics *PrometheusMetricsImpl) {
 	c := metrics.Counter("Mine")
 	c.Inc()
 	metrics.Counter("Mine").Inc()
@@ -222,7 +222,7 @@ func TestErrors(t *testing.T) {
 	assert.Equal(t, []string{"z_errors"}, metrics.TestHelper().MetricNames())
 }
 
-func doTestErrors(t *testing.T, metrics *PrometheusMetrics) {
+func doTestErrors(t *testing.T, metrics *PrometheusMetricsImpl) {
 	metrics.Error("bad")
 	metrics.Error("generic")
 	metrics.Error("generic")
@@ -256,7 +256,7 @@ func TestNames(t *testing.T) {
 }
 
 func TestTimersControlled(t *testing.T) {
-	metrics := PrometheusMetrics{registry: prometheus.NewRegistry(),
+	metrics := PrometheusMetricsImpl{registry: prometheus.NewRegistry(),
 		metricNamePrefix: "xx_",
 		registrations:    newMetricRegistrations(),
 		normalisedNames:  newNormalisedNames(),
@@ -272,7 +272,7 @@ func TestTimersControlled(t *testing.T) {
 }
 
 func TestTimersRealTime(t *testing.T) {
-	metrics := PrometheusMetrics{registry: prometheus.NewRegistry(),
+	metrics := PrometheusMetricsImpl{registry: prometheus.NewRegistry(),
 		registrations:   newMetricRegistrations(),
 		normalisedNames: newNormalisedNames(),
 		timerFactory:    &defaultTimerFactory{}}
@@ -284,12 +284,12 @@ func TestTimersRealTime(t *testing.T) {
 	// Can't validate times
 }
 
-func timedMethod(metrics *PrometheusMetrics) {
+func timedMethod(metrics PrometheusMetrics) {
 	defer metrics.Timer("Timer")()
 	fmt.Println("Whatever it is we're timing")
 }
 
-func (p *PrometheusMetrics) gatherOK(t *testing.T) []*clientmodel.MetricFamily {
+func (p *PrometheusMetricsImpl) gatherOK(t *testing.T) []*clientmodel.MetricFamily {
 	gathered, err := p.TestHelper().Gather()
 	assert.Nil(t, err)
 	return gathered

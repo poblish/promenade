@@ -21,7 +21,7 @@ func main() {
 	fmt.Println(metrics.TestHelper().MetricNames())
 }
 
-func timedMethod(metrics *promenade.PrometheusMetrics) {
+func timedMethod(metrics promenade.PrometheusMetrics) {
 	defer metrics.Timer("t")()
 	fmt.Println("Whatever it is we're timing")
 }

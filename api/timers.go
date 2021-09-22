@@ -31,7 +31,7 @@ func (t *defaultTimer) Observe() time.Duration {
 	return t.timer.ObserveDuration()
 }
 
-func (p *PrometheusMetrics) Timer(Name string) func() time.Duration {
+func (p *PrometheusMetricsImpl) Timer(Name string) func() time.Duration {
 	timer := p.timerFactory.NewTimer(p.Summary(Name).promMetric)
 	return func() time.Duration {
 		diff := timer.Observe()
