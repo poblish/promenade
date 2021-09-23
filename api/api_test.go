@@ -149,6 +149,48 @@ func TestGauge(t *testing.T) {
 	assert.Equal(t, "name:\"x_service_123_mygauge\" help:\"x_service_123_mygauge\" type:GAUGE metric:<gauge:<value:102 > >", strings.TrimSpace(m.String()))
 }
 
+func TestGaugeWithLabel(t *testing.T) {
+	metrics := NewMetrics(MetricOpts{Registry: prometheus.NewRegistry(), MetricNamePrefix: "prefix"})
+
+	g := metrics.GaugeWithLabel("current animals", "animal")
+	g.SetLabels("fleas").Value(1000)
+	g.IncLabels("dog")
+	g.IncLabelsBy("cat").Value(5)
+	g.DecLabels("cat")
+	g.DecLabelsBy("fleas").Value(15)
+
+	m := findMetric("prefix_current_animals", metrics.gatherOK(t))
+	assert.Equal(t, 3, len(m.Metric))
+	assert.Equal(t, "name:\"prefix_current_animals\" help:\"prefix_current_animals\" type:GAUGE metric:<label:<name:\"animal\" value:\"cat\" > gauge:<value:4 > > metric:<label:<name:\"animal\" value:\"dog\" > gauge:<value:1 > > metric:<label:<name:\"animal\" value:\"fleas\" > gauge:<value:985 > >", strings.TrimSpace(m.String()))
+}
+
+func TestGaugeWithLabels(t *testing.T) {
+	metrics := NewMetrics(MetricOpts{Registry: prometheus.NewRegistry(), MetricNamePrefix: "prefix"})
+
+	g := metrics.GaugeWithLabels("current animals", []string{"animal", "breed"})
+	g.SetLabels("fleas", "plague").Value(500)
+	g.SetLabels("fleas", "asian").Value(1000)
+	g.IncLabels("dog", "borzoi")
+	g.IncLabelsBy("cat", "black").Value(5)
+	g.IncLabelsBy("cat", "white").Value(1)
+	g.DecLabels("cat", "black")
+	g.DecLabels("cat", "white")
+	g.DecLabelsBy("fleas", "plague").Value(15)
+
+	m := findMetric("prefix_current_animals", metrics.gatherOK(t))
+	assert.Equal(t, 5, len(m.Metric))
+	assert.Equal(t, "label:<name:\"animal\" value:\"cat\" > label:<name:\"breed\" value:\"black\" > gauge:<value:4 >",
+		strings.TrimSpace(m.Metric[0].String()))
+	assert.Equal(t, "label:<name:\"animal\" value:\"cat\" > label:<name:\"breed\" value:\"white\" > gauge:<value:0 >",
+		strings.TrimSpace(m.Metric[1].String()))
+	assert.Equal(t, "label:<name:\"animal\" value:\"dog\" > label:<name:\"breed\" value:\"borzoi\" > gauge:<value:1 >",
+		strings.TrimSpace(m.Metric[2].String()))
+	assert.Equal(t, "label:<name:\"animal\" value:\"fleas\" > label:<name:\"breed\" value:\"asian\" > gauge:<value:1000 >",
+		strings.TrimSpace(m.Metric[3].String()))
+	assert.Equal(t, "label:<name:\"animal\" value:\"fleas\" > label:<name:\"breed\" value:\"plague\" > gauge:<value:485 >",
+		strings.TrimSpace(m.Metric[4].String()))
+}
+
 func TestSummary(t *testing.T) {
 	metrics := NewMetrics(MetricOpts{Registry: prometheus.NewRegistry(), MetricNamePrefix: "BLAH"})
 

@@ -25,6 +25,9 @@ type PrometheusMetrics interface {
 	CounterWithLabel(name string, labelName string, optionalDesc ...string) LabelledCounterFacade
 	CounterWithLabels(name string, labelNames []string, optionalDesc ...string) LabelledCounterFacade
 	Error(name string) ErrorCounter
+	Gauge(name string, optionalDesc ...string) GaugeFacade
+	GaugeWithLabel(name string, labelName string, optionalDesc ...string) LabelledGaugeFacade
+	GaugeWithLabels(name string, labelNames []string, optionalDesc ...string) LabelledGaugeFacade
 	Histogram(name string, buckets []float64, optionalDesc ...string) HistogramFacade
 	HistogramForResponseTime(name string, optionalDesc ...string) HistogramFacade
 	Summary(name string, optionalDesc ...string) SummaryFacade
@@ -75,6 +78,7 @@ const (
 	TypeCounter       = iota << 2
 	TypeCounterLabels = iota << 2
 	TypeGauge         = iota << 2
+	TypeGaugeLabels   = iota << 2
 	TypeSummary       = iota << 2
 	TypeSummaryLabels = iota << 2
 	TypeHistogram     = iota << 2
