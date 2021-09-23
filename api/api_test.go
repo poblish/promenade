@@ -24,7 +24,7 @@ func doTestCounter(t *testing.T, metrics *PrometheusMetricsImpl) {
 	c.IncBy(7)
 
 	m := findMetric("z_mine", metrics.gatherOK(t))
-	assert.Equal(t, len(m.Metric), 1)
+	assert.Equal(t, 1, len(m.Metric))
 	assert.Equal(t, "name:\"z_mine\" help:\"z_mine\" type:COUNTER metric:<counter:<value:9 > >", strings.TrimSpace(m.String()))
 }
 
@@ -145,7 +145,7 @@ func TestGauge(t *testing.T) {
 	metrics.Gauge("MyGauge").Inc()
 
 	m := findMetric("x_service_123_mygauge", metrics.gatherOK(t))
-	assert.Equal(t, len(m.Metric), 1)
+	assert.Equal(t, 1, len(m.Metric))
 	assert.Equal(t, "name:\"x_service_123_mygauge\" help:\"x_service_123_mygauge\" type:GAUGE metric:<gauge:<value:102 > >", strings.TrimSpace(m.String()))
 }
 
@@ -218,7 +218,7 @@ func TestRegisterUnderlyingMetric(t *testing.T) {
 	metric.Add(71)
 
 	m := findMetric(metricName, metrics.gatherOK(t))
-	assert.Equal(t, len(m.Metric), 1)
+	assert.Equal(t, 1, len(m.Metric))
 	assert.Equal(t, "counter:<value:71 >", strings.TrimSpace(m.Metric[0].String()))
 }
 
@@ -235,7 +235,7 @@ func TestHistogramForResponseTime(t *testing.T) {
 	s.Update(3.834344)
 
 	m := findMetric("a_myhisto", metrics.gatherOK(t))
-	assert.Equal(t, len(m.Metric), 1)
+	assert.Equal(t, 1, len(m.Metric))
 	assert.Equal(t, "histogram:<sample_count:7 sample_sum:19.634344000000002 bucket:<cumulative_count:0 upper_bound:0.005 > bucket:<cumulative_count:0 upper_bound:0.01 > bucket:<cumulative_count:0 upper_bound:0.025 > bucket:<cumulative_count:0 upper_bound:0.05 > bucket:<cumulative_count:0 upper_bound:0.1 > bucket:<cumulative_count:0 upper_bound:0.25 > bucket:<cumulative_count:0 upper_bound:0.5 > bucket:<cumulative_count:0 upper_bound:1 > bucket:<cumulative_count:2 upper_bound:2.5 > bucket:<cumulative_count:7 upper_bound:5 > bucket:<cumulative_count:7 upper_bound:10 > >",
 		strings.TrimSpace(m.Metric[0].String()))
 }
@@ -253,7 +253,7 @@ func TestHistogramCustomBuckets(t *testing.T) {
 	s.Update(3.834344)
 
 	m := findMetric("a_myhisto", metrics.gatherOK(t))
-	assert.Equal(t, len(m.Metric), 1)
+	assert.Equal(t, 1, len(m.Metric))
 	assert.Equal(t, "histogram:<sample_count:7 sample_sum:19.634344000000002 bucket:<cumulative_count:1 upper_bound:2 > bucket:<cumulative_count:4 upper_bound:3 > bucket:<cumulative_count:6 upper_bound:3.5 > >",
 		strings.TrimSpace(m.Metric[0].String()))
 }
@@ -271,7 +271,7 @@ func doTestErrors(t *testing.T, metrics *PrometheusMetricsImpl) {
 	metrics.Error("worse")
 
 	m := findMetric("z_errors", metrics.gatherOK(t))
-	assert.Equal(t, len(m.Metric), 3)
+	assert.Equal(t, 3, len(m.Metric))
 	assert.Equal(t, "label:<name:\"error_type\" value:\"bad\" > counter:<value:1 >", strings.TrimSpace(m.Metric[0].String()))
 	assert.Equal(t, "label:<name:\"error_type\" value:\"generic\" > counter:<value:2 >", strings.TrimSpace(m.Metric[1].String()))
 	assert.Equal(t, "label:<name:\"error_type\" value:\"worse\" > counter:<value:1 >", strings.TrimSpace(m.Metric[2].String()))
@@ -308,7 +308,7 @@ func TestTimersControlled(t *testing.T) {
 	timedMethod(&metrics)
 
 	m := findMetric("xx_timer", metrics.gatherOK(t))
-	assert.Equal(t, len(m.Metric), 1)
+	assert.Equal(t, 1, len(m.Metric))
 	assert.Equal(t, "summary:<sample_count:2 sample_sum:4 quantile:<quantile:0.5 value:2 > quantile:<quantile:0.75 value:2 > quantile:<quantile:0.9 value:2 > quantile:<quantile:0.95 value:2 > quantile:<quantile:0.99 value:2 > quantile:<quantile:0.999 value:2 > >",
 		strings.TrimSpace(m.Metric[0].String()))
 }
@@ -337,7 +337,7 @@ func TestLabelledTimersControlled(t *testing.T) {
 	timedMethodWithLabel(&metrics)
 
 	m := findMetric("xx_animal_timer", metrics.gatherOK(t))
-	assert.Equal(t, len(m.Metric), 1)
+	assert.Equal(t, 1, len(m.Metric))
 	assert.Equal(t, "label:<name:\"animal\" value:\"cat\" > summary:<sample_count:2 sample_sum:4 quantile:<quantile:0.5 value:2 > quantile:<quantile:0.75 value:2 > quantile:<quantile:0.9 value:2 > quantile:<quantile:0.95 value:2 > quantile:<quantile:0.99 value:2 > quantile:<quantile:0.999 value:2 > >",
 		strings.TrimSpace(m.Metric[0].String()))
 }
