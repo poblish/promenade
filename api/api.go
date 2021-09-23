@@ -21,6 +21,9 @@ type MetricOpts struct {
 }
 
 type PrometheusMetrics interface {
+	RegisterMetric(metric prometheus.Collector) error
+	TestHelper() *TestHelper
+
 	Counter(name string, optionalDesc ...string) CounterFacade
 	CounterWithLabel(name string, labelName string, optionalDesc ...string) LabelledCounterFacade
 	CounterWithLabels(name string, labelNames []string, optionalDesc ...string) LabelledCounterFacade
@@ -107,8 +110,8 @@ func newNormalisedNames() normalisedNames {
 	return normalisedNames{internal: make(map[string]string)}
 }
 
-func (p *PrometheusMetricsImpl) RegisterMetric(metric prometheus.Collector) {
-	p.registry.Register(metric)
+func (p *PrometheusMetricsImpl) RegisterMetric(metric prometheus.Collector) error {
+	return p.registry.Register(metric)
 }
 
 type MetricBuilder func(p *PrometheusMetricsImpl, name string, desc string) interface{}
