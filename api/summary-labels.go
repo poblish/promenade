@@ -17,7 +17,7 @@ func (p *PrometheusMetricsImpl) SummaryWithLabel(name string, labelName string, 
 func (p *PrometheusMetricsImpl) SummaryWithLabels(name string, labelNames []string, optionalDesc ...string) LabelledSummaryFacade {
 	return p.buildLabelledSummary(func(p *PrometheusMetricsImpl, fullMetricName string, fullDescription string) interface{} {
 		internal := prometheus.NewSummaryVec(prometheus.SummaryOpts{Name: fullMetricName, Help: fullDescription, Objectives: DefaultObjectives}, labelNames)
-		p.RegisterMetric(internal)
+		p.Register(internal)
 		return LabelledSummaryFacade{promMetric: internal}
 	}, name, optionalDesc)
 }

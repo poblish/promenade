@@ -23,7 +23,7 @@ func (p *PrometheusMetricsImpl) getErrorCounter() *prometheus.CounterVec {
 		var description = adjustedName
 
 		internal := prometheus.NewCounterVec(prometheus.CounterOpts{Name: adjustedName, Help: description}, []string{"error_type"})
-		p.RegisterMetric(internal)
+		p.Register(internal)
 		p.errorCounter = internal
 		p.errorCounterName = adjustedName
 	}

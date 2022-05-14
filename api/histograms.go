@@ -15,7 +15,7 @@ func (p *PrometheusMetricsImpl) buildHistogram(builder MetricBuilder, name strin
 func (p *PrometheusMetricsImpl) Histogram(name string, buckets []float64, optionalDesc ...string) HistogramFacade {
 	return p.buildHistogram(func(p *PrometheusMetricsImpl, fullMetricName string, fullDescription string) interface{} {
 		internal := prometheus.NewHistogram(prometheus.HistogramOpts{Name: fullMetricName, Help: fullDescription, Buckets: buckets})
-		p.RegisterMetric(internal)
+		p.Register(internal)
 		return HistogramFacade{promMetric: internal}
 	}, name, optionalDesc)
 }
@@ -23,7 +23,7 @@ func (p *PrometheusMetricsImpl) Histogram(name string, buckets []float64, option
 func (p *PrometheusMetricsImpl) HistogramForResponseTime(name string, optionalDesc ...string) HistogramFacade {
 	return p.buildHistogram(func(p *PrometheusMetricsImpl, fullMetricName string, fullDescription string) interface{} {
 		internal := prometheus.NewHistogram(prometheus.HistogramOpts{Name: fullMetricName, Help: fullDescription, Buckets: DefaultBuckets})
-		p.RegisterMetric(internal)
+		p.Register(internal)
 		return HistogramFacade{promMetric: internal}
 	}, name, optionalDesc)
 }

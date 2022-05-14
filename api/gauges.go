@@ -13,7 +13,7 @@ func (p *PrometheusMetricsImpl) buildGauge(builder MetricBuilder, name string, o
 func (p *PrometheusMetricsImpl) Gauge(name string, optionalDesc ...string) GaugeFacade {
 	return p.buildGauge(func(p *PrometheusMetricsImpl, fullMetricName string, fullDescription string) interface{} {
 		internal := prometheus.NewGauge(prometheus.GaugeOpts{Name: fullMetricName, Help: fullDescription})
-		p.RegisterMetric(internal)
+		p.Register(internal)
 		return GaugeFacade{promMetric: internal}
 	}, name, optionalDesc)
 }

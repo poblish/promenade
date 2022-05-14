@@ -256,7 +256,7 @@ func TestRegisterUnderlyingMetric(t *testing.T) {
 
 	metricName := "name_" + fmt.Sprint(rand.Intn(100000))
 	metric := prometheus.NewCounter(prometheus.CounterOpts{Name: metricName, Help: "help"})
-	metrics.RegisterMetric(metric)
+	metrics.Register(metric)
 	metric.Add(71)
 
 	m := findMetric(metricName, metrics.gatherOK(t))

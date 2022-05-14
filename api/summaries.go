@@ -17,7 +17,7 @@ func (p *PrometheusMetricsImpl) buildSummary(builder MetricBuilder, name string,
 func (p *PrometheusMetricsImpl) Summary(name string, optionalDesc ...string) SummaryFacade {
 	return p.buildSummary(func(p *PrometheusMetricsImpl, fullMetricName string, fullDescription string) interface{} {
 		internal := prometheus.NewSummary(prometheus.SummaryOpts{Name: fullMetricName, Help: fullDescription, Objectives: DefaultObjectives})
-		p.RegisterMetric(internal)
+		p.Register(internal)
 		return SummaryFacade{promMetric: internal}
 	}, name, optionalDesc)
 }

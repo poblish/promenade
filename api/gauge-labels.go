@@ -17,7 +17,7 @@ func (p *PrometheusMetricsImpl) GaugeWithLabel(name string, labelName string, op
 func (p *PrometheusMetricsImpl) GaugeWithLabels(name string, labelNames []string, optionalDesc ...string) LabelledGaugeFacade {
 	return p.buildLabelledGauge(func(p *PrometheusMetricsImpl, fullMetricName string, fullDescription string) interface{} {
 		internal := prometheus.NewGaugeVec(prometheus.GaugeOpts{Name: fullMetricName, Help: fullDescription}, labelNames)
-		p.RegisterMetric(internal)
+		p.Register(internal)
 		return LabelledGaugeFacade{promMetric: internal}
 	}, name, optionalDesc)
 }

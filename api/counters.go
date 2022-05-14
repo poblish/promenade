@@ -13,7 +13,7 @@ func (p *PrometheusMetricsImpl) buildCounter(builder MetricBuilder, name string,
 func (p *PrometheusMetricsImpl) Counter(name string, optionalDesc ...string) CounterFacade {
 	return p.buildCounter(func(p *PrometheusMetricsImpl, fullMetricName string, fullDescription string) interface{} {
 		internal := prometheus.NewCounter(prometheus.CounterOpts{Name: fullMetricName, Help: fullDescription})
-		p.RegisterMetric(internal)
+		p.Register(internal)
 		return CounterFacade{promMetric: internal}
 	}, name, optionalDesc)
 }

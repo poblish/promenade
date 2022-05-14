@@ -17,7 +17,7 @@ func (p *PrometheusMetricsImpl) CounterWithLabel(name string, labelName string, 
 func (p *PrometheusMetricsImpl) CounterWithLabels(name string, labelNames []string, optionalDesc ...string) LabelledCounterFacade {
 	return p.buildLabelledCounter(func(p *PrometheusMetricsImpl, fullMetricName string, fullDescription string) interface{} {
 		internal := prometheus.NewCounterVec(prometheus.CounterOpts{Name: fullMetricName, Help: fullDescription}, labelNames)
-		p.RegisterMetric(internal)
+		p.Register(internal)
 		return LabelledCounterFacade{promMetric: internal}
 	}, name, optionalDesc)
 }
