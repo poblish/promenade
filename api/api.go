@@ -39,6 +39,7 @@ type PrometheusMetrics interface {
 	SummaryWithLabels(name string, labelNames []string, optionalDesc ...string) LabelledSummaryFacade
 	Timer(Name string) func() time.Duration
 	TimerWithLabel(Name string, labelName string, labelValue string) func() time.Duration
+	TimerWithLabels(Name string, labelNames []string, labelValues []string) func() time.Duration
 }
 
 type PrometheusMetricsImpl struct {

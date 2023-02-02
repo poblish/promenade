@@ -46,3 +46,11 @@ func (p *PrometheusMetricsImpl) TimerWithLabel(Name string, labelName string, la
 		return diff
 	}
 }
+
+func (p *PrometheusMetricsImpl) TimerWithLabels(Name string, labelNames []string, labelValues []string) func() time.Duration {
+	timer := p.timerFactory.NewTimer(p.SummaryWithLabels(Name, labelNames).promMetric.WithLabelValues(labelValues...))
+	return func() time.Duration {
+		diff := timer.Observe()
+		return diff
+	}
+}
