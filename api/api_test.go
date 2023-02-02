@@ -2,14 +2,12 @@ package api
 
 import (
 	"fmt"
-	"math/rand"
-	"strings"
-	"testing"
-	"time"
-
 	"github.com/prometheus/client_golang/prometheus"
 	clientmodel "github.com/prometheus/client_model/go"
 	"github.com/stretchr/testify/assert"
+	"math/rand"
+	"strings"
+	"testing"
 )
 
 func TestCounter(t *testing.T) {
@@ -339,86 +337,10 @@ func TestNames(t *testing.T) {
 	assert.ElementsMatch(t, []string{"blah_c", "blah_g", "blah_h", "blah_s", "blah_timer", "blah_errors"}, metrics.TestHelper().MetricNames())
 }
 
-func TestTimersControlled(t *testing.T) {
-	metrics := PrometheusMetricsImpl{registry: prometheus.NewRegistry(),
-		metricNamePrefix: "xx_",
-		registrations:    newMetricRegistrations(),
-		normalisedNames:  newNormalisedNames(),
-		timerFactory:     &controlledTimerFactory{defaultExpectation: 2 * time.Second}}
-
-	timedMethod(&metrics)
-	timedMethod(&metrics)
-
-	m := findMetric("xx_timer", metrics.gatherOK(t))
-	assert.Equal(t, 1, len(m.Metric))
-	assert.Equal(t, "summary:<sample_count:2 sample_sum:4 quantile:<quantile:0.5 value:2 > quantile:<quantile:0.75 value:2 > quantile:<quantile:0.9 value:2 > quantile:<quantile:0.95 value:2 > quantile:<quantile:0.99 value:2 > quantile:<quantile:0.999 value:2 > >",
-		strings.TrimSpace(m.Metric[0].String()))
-}
-
-func TestTimersRealTime(t *testing.T) {
-	metrics := PrometheusMetricsImpl{registry: prometheus.NewRegistry(),
-		registrations:   newMetricRegistrations(),
-		normalisedNames: newNormalisedNames(),
-		timerFactory:    &defaultTimerFactory{}}
-
-	timedMethod(&metrics)
-
-	m := findMetric("timer", metrics.gatherOK(t))
-	assert.Equal(t, 1, len(m.Metric))
-	// Can't validate times
-}
-
-func TestLabelledTimersControlled(t *testing.T) {
-	metrics := PrometheusMetricsImpl{registry: prometheus.NewRegistry(),
-		metricNamePrefix: "xx_",
-		registrations:    newMetricRegistrations(),
-		normalisedNames:  newNormalisedNames(),
-		timerFactory:     &controlledTimerFactory{defaultExpectation: 2 * time.Second}}
-
-	timedMethodWithLabel(&metrics)
-	timedMethodWithLabel(&metrics)
-
-	m := findMetric("xx_animal_timer", metrics.gatherOK(t))
-	assert.Equal(t, 1, len(m.Metric))
-	assert.Equal(t, "label:<name:\"animal\" value:\"cat\" > summary:<sample_count:2 sample_sum:4 quantile:<quantile:0.5 value:2 > quantile:<quantile:0.75 value:2 > quantile:<quantile:0.9 value:2 > quantile:<quantile:0.95 value:2 > quantile:<quantile:0.99 value:2 > quantile:<quantile:0.999 value:2 > >",
-		strings.TrimSpace(m.Metric[0].String()))
-}
-
-func timedMethod(metrics PrometheusMetrics) {
-	defer metrics.Timer("Timer")()
-	fmt.Println("Whatever it is we're timing")
-}
-
-func timedMethodWithLabel(metrics PrometheusMetrics) {
-	defer metrics.TimerWithLabel("animal_timer", "animal", "cat")()
-	fmt.Println("Whatever it is we're timing")
-}
-
 func (p *PrometheusMetricsImpl) gatherOK(t *testing.T) []*clientmodel.MetricFamily {
 	gathered, err := p.TestHelper().Gather()
 	assert.Nil(t, err)
 	return gathered
-}
-
-type controlledTimer struct {
-	eventTimer
-	observer    prometheus.Observer
-	expectation time.Duration
-}
-
-type controlledTimerFactory struct {
-	timerFactory
-	defaultExpectation time.Duration
-}
-
-func (f *controlledTimerFactory) NewTimer(o prometheus.Observer) eventTimer {
-	return &controlledTimer{observer: o, expectation: f.defaultExpectation}
-}
-
-func (t *controlledTimer) Observe() time.Duration {
-	fmt.Println("Making fixed observation...")
-	t.observer.Observe(t.expectation.Seconds())
-	return t.expectation
 }
 
 func findMetric(metricName string, gathered []*clientmodel.MetricFamily) *clientmodel.MetricFamily {
