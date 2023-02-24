@@ -15,18 +15,24 @@ func (p *PrometheusMetricsImpl) TestHelper() *TestHelper {
 	return &TestHelper{metrics: p}
 }
 
-func (helper *TestHelper) Clear() {
-	helper.metrics.registry = prometheus.NewRegistry()
-	helper.metrics.registrations = newMetricRegistrations()
-	helper.metrics.errorCounter = nil
+func (h *TestHelper) Clear() {
+	if h.metrics == nil {
+		return
+	}
+	h.metrics.registry = prometheus.NewRegistry()
+	h.metrics.registrations = newMetricRegistrations()
+	h.metrics.errorCounter = nil
 }
 
-func (helper *TestHelper) Gather() ([]*clientmodel.MetricFamily, error) {
-	return helper.metrics.registry.(prometheus.Gatherer).Gather()
+func (h *TestHelper) Gather() ([]*clientmodel.MetricFamily, error) {
+	if h.metrics == nil {
+		return nil, nil
+	}
+	return h.metrics.registry.(prometheus.Gatherer).Gather()
 }
 
-func (helper *TestHelper) MetricNames() []string {
-	gathered, _ := helper.Gather()
+func (h *TestHelper) MetricNames() []string {
+	gathered, _ := h.Gather()
 
 	count := len(gathered)
 	names := make([]string, count)
@@ -40,9 +46,9 @@ func (helper *TestHelper) MetricNames() []string {
 
 type LabelsMap map[string]map[string]*clientmodel.Metric
 
-func (helper *TestHelper) GetMetricLabelValues(name string) LabelsMap {
-	metricFamilies, _ := helper.Gather()
-	metricFamily, err := helper.GetMetricFamily(metricFamilies, name)
+func (h *TestHelper) GetMetricLabelValues(name string) LabelsMap {
+	metricFamilies, _ := h.Gather()
+	metricFamily, err := h.GetMetricFamily(metricFamilies, name)
 	if err != nil {
 		return nil
 	}
@@ -68,7 +74,7 @@ func (helper *TestHelper) GetMetricLabelValues(name string) LabelsMap {
 	return labelsMap
 }
 
-func (helper *TestHelper) GetMetricFamily(metrics []*clientmodel.MetricFamily, name string) (*clientmodel.MetricFamily, error) {
+func (h *TestHelper) GetMetricFamily(metrics []*clientmodel.MetricFamily, name string) (*clientmodel.MetricFamily, error) {
 	for _, m := range metrics {
 		if *m.Name == name {
 			return m, nil

@@ -2,7 +2,12 @@ package api
 
 import "github.com/prometheus/client_golang/prometheus"
 
-type LabelledCounterFacade struct {
+type LabelledCounterFacade interface {
+	IncLabel(labelValues ...string)
+	IncLabelBy(labelValues ...string) IncByValue
+}
+
+type labelledCounterFacade struct {
 	promMetric *prometheus.CounterVec
 }
 
@@ -17,12 +22,12 @@ func (p *PrometheusMetricsImpl) CounterWithLabel(name string, labelName string, 
 func (p *PrometheusMetricsImpl) CounterWithLabels(name string, labelNames []string, optionalDesc ...string) LabelledCounterFacade {
 	return p.buildLabelledCounter(func(p *PrometheusMetricsImpl, fullMetricName string, fullDescription string) interface{} {
 		internal := prometheus.NewCounterVec(prometheus.CounterOpts{Name: fullMetricName, Help: fullDescription}, labelNames)
-		p.Register(internal)
-		return LabelledCounterFacade{promMetric: internal}
+		_ = p.Register(internal)
+		return labelledCounterFacade{promMetric: internal}
 	}, name, optionalDesc)
 }
 
-func (f LabelledCounterFacade) IncLabel(labelValues ...string) {
+func (f labelledCounterFacade) IncLabel(labelValues ...string) {
 	f.promMetric.WithLabelValues(labelValues...).Inc()
 }
 
@@ -30,7 +35,7 @@ type IncByValue struct {
 	counter prometheus.Counter
 }
 
-func (f LabelledCounterFacade) IncLabelBy(labelValues ...string) IncByValue {
+func (f labelledCounterFacade) IncLabelBy(labelValues ...string) IncByValue {
 	return IncByValue{counter: f.promMetric.WithLabelValues(labelValues...)}
 }
 

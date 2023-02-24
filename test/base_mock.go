@@ -23,16 +23,16 @@ func (b BaseMock) TestHelper() *api.TestHelper {
 	return &api.TestHelper{}
 }
 
-func (b BaseMock) Counter(name string, optionalDesc ...string) api.CounterFacade {
-	return api.CounterFacade{}
+func (b BaseMock) Counter(_ string, _ ...string) api.CounterFacade {
+	return emptyCounter{}
 }
 
 func (b BaseMock) CounterWithLabel(name string, labelName string, optionalDesc ...string) api.LabelledCounterFacade {
-	return api.LabelledCounterFacade{}
+	return emptyLabelledCounter{}
 }
 
 func (b BaseMock) CounterWithLabels(name string, labelNames []string, optionalDesc ...string) api.LabelledCounterFacade {
-	return api.LabelledCounterFacade{}
+	return emptyLabelledCounter{}
 }
 
 func (b BaseMock) Error(name string) api.ErrorCounter {
@@ -40,23 +40,23 @@ func (b BaseMock) Error(name string) api.ErrorCounter {
 }
 
 func (b BaseMock) Gauge(name string, optionalDesc ...string) api.GaugeFacade {
-	return api.GaugeFacade{}
+	return emptyGauge{}
 }
 
 func (b BaseMock) GaugeWithLabel(name string, labelName string, optionalDesc ...string) api.LabelledGaugeFacade {
-	return api.LabelledGaugeFacade{}
+	return emptyLabelledGauge{}
 }
 
 func (b BaseMock) GaugeWithLabels(name string, labelNames []string, optionalDesc ...string) api.LabelledGaugeFacade {
-	return api.LabelledGaugeFacade{}
+	return emptyLabelledGauge{}
 }
 
 func (b BaseMock) Histogram(name string, buckets []float64, optionalDesc ...string) api.HistogramFacade {
-	return api.HistogramFacade{}
+	return emptyHistogram{}
 }
 
 func (b BaseMock) HistogramForResponseTime(name string, optionalDesc ...string) api.HistogramFacade {
-	return api.HistogramFacade{}
+	return emptyHistogram{}
 }
 
 func (b BaseMock) Summary(name string, optionalDesc ...string) api.SummaryFacade {

@@ -2,7 +2,15 @@ package api
 
 import "github.com/prometheus/client_golang/prometheus"
 
-type LabelledGaugeFacade struct {
+type LabelledGaugeFacade interface {
+	IncLabels(labelValues ...string)
+	IncLabelsBy(labelValues ...string) IncGaugeByValue
+	DecLabels(labelValues ...string)
+	DecLabelsBy(labelValues ...string) DecGaugeByValue
+	SetLabels(labelValues ...string) SetGaugeByValue
+}
+
+type labelledGaugeFacade struct {
 	promMetric *prometheus.GaugeVec
 }
 
@@ -17,28 +25,28 @@ func (p *PrometheusMetricsImpl) GaugeWithLabel(name string, labelName string, op
 func (p *PrometheusMetricsImpl) GaugeWithLabels(name string, labelNames []string, optionalDesc ...string) LabelledGaugeFacade {
 	return p.buildLabelledGauge(func(p *PrometheusMetricsImpl, fullMetricName string, fullDescription string) interface{} {
 		internal := prometheus.NewGaugeVec(prometheus.GaugeOpts{Name: fullMetricName, Help: fullDescription}, labelNames)
-		p.Register(internal)
-		return LabelledGaugeFacade{promMetric: internal}
+		_ = p.Register(internal)
+		return labelledGaugeFacade{promMetric: internal}
 	}, name, optionalDesc)
 }
 
-func (f LabelledGaugeFacade) IncLabels(labelValues ...string) {
+func (f labelledGaugeFacade) IncLabels(labelValues ...string) {
 	f.promMetric.WithLabelValues(labelValues...).Inc()
 }
 
-func (f LabelledGaugeFacade) DecLabels(labelValues ...string) {
+func (f labelledGaugeFacade) DecLabels(labelValues ...string) {
 	f.promMetric.WithLabelValues(labelValues...).Dec()
 }
 
-func (f LabelledGaugeFacade) IncLabelsBy(labelValues ...string) IncGaugeByValue {
+func (f labelledGaugeFacade) IncLabelsBy(labelValues ...string) IncGaugeByValue {
 	return IncGaugeByValue{gauge: f.promMetric.WithLabelValues(labelValues...)}
 }
 
-func (f LabelledGaugeFacade) DecLabelsBy(labelValues ...string) DecGaugeByValue {
+func (f labelledGaugeFacade) DecLabelsBy(labelValues ...string) DecGaugeByValue {
 	return DecGaugeByValue{gauge: f.promMetric.WithLabelValues(labelValues...)}
 }
 
-func (f LabelledGaugeFacade) SetLabels(labelValues ...string) SetGaugeByValue {
+func (f labelledGaugeFacade) SetLabels(labelValues ...string) SetGaugeByValue {
 	return SetGaugeByValue{gauge: f.promMetric.WithLabelValues(labelValues...)}
 }
 

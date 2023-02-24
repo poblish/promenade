@@ -2,7 +2,12 @@ package api
 
 import "github.com/prometheus/client_golang/prometheus"
 
-type CounterFacade struct {
+type CounterFacade interface {
+	Inc()
+	IncBy(inc float64)
+}
+
+type counterFacade struct {
 	promMetric prometheus.Counter
 }
 
@@ -13,15 +18,15 @@ func (p *PrometheusMetricsImpl) buildCounter(builder MetricBuilder, name string,
 func (p *PrometheusMetricsImpl) Counter(name string, optionalDesc ...string) CounterFacade {
 	return p.buildCounter(func(p *PrometheusMetricsImpl, fullMetricName string, fullDescription string) interface{} {
 		internal := prometheus.NewCounter(prometheus.CounterOpts{Name: fullMetricName, Help: fullDescription})
-		p.Register(internal)
-		return CounterFacade{promMetric: internal}
+		_ = p.Register(internal)
+		return counterFacade{promMetric: internal}
 	}, name, optionalDesc)
 }
 
-func (f CounterFacade) Inc() {
+func (f counterFacade) Inc() {
 	f.promMetric.Inc()
 }
 
-func (f CounterFacade) IncBy(inc float64) {
+func (f counterFacade) IncBy(inc float64) {
 	f.promMetric.Add(inc)
 }
