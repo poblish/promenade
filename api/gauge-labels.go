@@ -39,37 +39,49 @@ func (f labelledGaugeFacade) DecLabels(labelValues ...string) {
 }
 
 func (f labelledGaugeFacade) IncLabelsBy(labelValues ...string) IncGaugeByValue {
-	return IncGaugeByValue{gauge: f.promMetric.WithLabelValues(labelValues...)}
+	return incGaugeByValue{gauge: f.promMetric.WithLabelValues(labelValues...)}
 }
 
 func (f labelledGaugeFacade) DecLabelsBy(labelValues ...string) DecGaugeByValue {
-	return DecGaugeByValue{gauge: f.promMetric.WithLabelValues(labelValues...)}
+	return decGaugeByValue{gauge: f.promMetric.WithLabelValues(labelValues...)}
 }
 
 func (f labelledGaugeFacade) SetLabels(labelValues ...string) SetGaugeByValue {
-	return SetGaugeByValue{gauge: f.promMetric.WithLabelValues(labelValues...)}
+	return setGaugeByValue{gauge: f.promMetric.WithLabelValues(labelValues...)}
 }
 
-type IncGaugeByValue struct {
+type IncGaugeByValue interface {
+	Value(inc float64)
+}
+
+type incGaugeByValue struct {
 	gauge prometheus.Gauge
 }
 
-type DecGaugeByValue struct {
+type DecGaugeByValue interface {
+	Value(inc float64)
+}
+
+type decGaugeByValue struct {
 	gauge prometheus.Gauge
 }
 
-type SetGaugeByValue struct {
+type SetGaugeByValue interface {
+	Value(inc float64)
+}
+
+type setGaugeByValue struct {
 	gauge prometheus.Gauge
 }
 
-func (f IncGaugeByValue) Value(inc float64) {
+func (f incGaugeByValue) Value(inc float64) {
 	f.gauge.Add(inc)
 }
 
-func (f DecGaugeByValue) Value(inc float64) {
+func (f decGaugeByValue) Value(inc float64) {
 	f.gauge.Sub(inc)
 }
 
-func (f SetGaugeByValue) Value(inc float64) {
+func (f setGaugeByValue) Value(inc float64) {
 	f.gauge.Set(inc)
 }

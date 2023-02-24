@@ -31,14 +31,18 @@ func (f labelledCounterFacade) IncLabel(labelValues ...string) {
 	f.promMetric.WithLabelValues(labelValues...).Inc()
 }
 
-type IncByValue struct {
+type IncByValue interface {
+	Value(inc float64)
+}
+
+type incByValue struct {
 	counter prometheus.Counter
 }
 
 func (f labelledCounterFacade) IncLabelBy(labelValues ...string) IncByValue {
-	return IncByValue{counter: f.promMetric.WithLabelValues(labelValues...)}
+	return incByValue{counter: f.promMetric.WithLabelValues(labelValues...)}
 }
 
-func (f IncByValue) Value(inc float64) {
+func (f incByValue) Value(inc float64) {
 	f.counter.Add(inc)
 }

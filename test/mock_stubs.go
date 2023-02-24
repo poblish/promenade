@@ -9,29 +9,36 @@ func (e emptyCounter) Inc() {
 	// NOOP
 }
 
-func (e emptyCounter) IncBy(inc float64) {
+func (e emptyCounter) IncBy(_ float64) {
 	// NOOP
 }
 
 type emptyLabelledCounter struct {
 }
 
-func (e emptyLabelledCounter) IncLabelBy(labelValues ...string) api.IncByValue {
-	return api.IncByValue{}
+type emptyIncByValue struct {
 }
 
-func (e emptyLabelledCounter) IncLabel(labelValues ...string) {
+func (e emptyIncByValue) Value(_ float64) {
 	// NOOP
 }
 
-func (e emptyLabelledCounter) Value(inc float64) {
+func (e emptyLabelledCounter) IncLabelBy(_ ...string) api.IncByValue {
+	return emptyIncByValue{}
+}
+
+func (e emptyLabelledCounter) IncLabel(_ ...string) {
+	// NOOP
+}
+
+func (e emptyLabelledCounter) Value(_ float64) {
 	// NOOP
 }
 
 type emptyGauge struct {
 }
 
-func (e emptyGauge) SetValue(value float64) {
+func (e emptyGauge) SetValue(_ float64) {
 	// NOOP
 }
 
@@ -39,7 +46,7 @@ func (e emptyGauge) Inc() {
 	// NOOP
 }
 
-func (e emptyGauge) IncBy(inc float64) {
+func (e emptyGauge) IncBy(_ float64) {
 	// NOOP
 }
 
@@ -47,36 +54,57 @@ func (e emptyGauge) Dec() {
 	// NOOP
 }
 
-func (e emptyGauge) DecBy(dec float64) {
+func (e emptyGauge) DecBy(_ float64) {
 	// NOOP
 }
 
 type emptyHistogram struct {
 }
 
-func (e emptyHistogram) Update(value float64) {
+func (e emptyHistogram) Update(_ float64) {
 	// NOOP
 }
 
 type emptyLabelledGauge struct {
 }
 
-func (e emptyLabelledGauge) IncLabels(labelValues ...string) {
+func (e emptyLabelledGauge) IncLabels(_ ...string) {
 	// NOOP
 }
 
-func (e emptyLabelledGauge) IncLabelsBy(labelValues ...string) api.IncGaugeByValue {
-	return api.IncGaugeByValue{}
+type emptyIncGaugeByValue struct {
 }
 
-func (e emptyLabelledGauge) DecLabels(labelValues ...string) {
+func (e emptyIncGaugeByValue) Value(inc float64) {
 	// NOOP
 }
 
-func (e emptyLabelledGauge) DecLabelsBy(labelValues ...string) api.DecGaugeByValue {
-	return api.DecGaugeByValue{}
+func (e emptyLabelledGauge) IncLabelsBy(_ ...string) api.IncGaugeByValue {
+	return emptyIncGaugeByValue{}
 }
 
-func (e emptyLabelledGauge) SetLabels(labelValues ...string) api.SetGaugeByValue {
-	return api.SetGaugeByValue{}
+func (e emptyLabelledGauge) DecLabels(_ ...string) {
+	// NOOP
+}
+
+type emptyDecGaugeByValue struct {
+}
+
+func (e emptyDecGaugeByValue) Value(inc float64) {
+	// NOOP
+}
+
+func (e emptyLabelledGauge) DecLabelsBy(_ ...string) api.DecGaugeByValue {
+	return emptyDecGaugeByValue{}
+}
+
+type emptySetGaugeByValue struct {
+}
+
+func (e emptySetGaugeByValue) Value(inc float64) {
+	// NOOP
+}
+
+func (e emptyLabelledGauge) SetLabels(_ ...string) api.SetGaugeByValue {
+	return emptySetGaugeByValue{}
 }
