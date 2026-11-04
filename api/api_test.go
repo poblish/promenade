@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"math/rand"
 	"strings"
+	"sync"
 	"testing"
 )
 
@@ -315,6 +316,39 @@ func doTestErrors(t *testing.T, metrics *PrometheusMetricsImpl) {
 	assert.Equal(t, "label:<name:\"error_type\" value:\"bad\" > counter:<value:1 >", strings.TrimSpace(m.Metric[0].String()))
 	assert.Equal(t, "label:<name:\"error_type\" value:\"generic\" > counter:<value:2 >", strings.TrimSpace(m.Metric[1].String()))
 	assert.Equal(t, "label:<name:\"error_type\" value:\"worse\" > counter:<value:1 >", strings.TrimSpace(m.Metric[2].String()))
+}
+
+func TestErrorsConcurrentFirstUse(t *testing.T) {
+	for i := 0; i < 50; i++ {
+		metrics := NewMetrics(MetricOpts{Registry: prometheus.NewRegistry(), MetricNamePrefix: "z"})
+
+		start := make(chan struct{})
+		var wg sync.WaitGroup
+		for g := 0; g < 8; g++ {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				<-start
+				metrics.Error("e")
+			}()
+		}
+		close(start)
+		wg.Wait()
+
+		m := findMetric("z_errors", metrics.gatherOK(t))
+		assert.Equal(t, "label:<name:\"error_type\" value:\"e\" > counter:<value:8 >", strings.TrimSpace(m.Metric[0].String()))
+	}
+}
+
+func TestInitErrors(t *testing.T) {
+	metrics := NewMetrics(MetricOpts{Registry: prometheus.NewRegistry(), MetricNamePrefix: "z"})
+	metrics.InitErrors("bad", "worse")
+	metrics.Error("bad")
+
+	m := findMetric("z_errors", metrics.gatherOK(t))
+	assert.Equal(t, 2, len(m.Metric))
+	assert.Equal(t, "label:<name:\"error_type\" value:\"bad\" > counter:<value:1 >", strings.TrimSpace(m.Metric[0].String()))
+	assert.Equal(t, "label:<name:\"error_type\" value:\"worse\" > counter:<value:0 >", strings.TrimSpace(m.Metric[1].String()))
 }
 
 func TestClear(t *testing.T) {

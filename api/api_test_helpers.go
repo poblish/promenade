@@ -21,7 +21,9 @@ func (h *TestHelper) Clear() {
 	}
 	h.metrics.registry = prometheus.NewRegistry()
 	h.metrics.registrations = newMetricRegistrations()
+	h.metrics.errorCounterLock.Lock()
 	h.metrics.errorCounter = nil
+	h.metrics.errorCounterLock.Unlock()
 }
 
 func (h *TestHelper) Gather() ([]*clientmodel.MetricFamily, error) {
