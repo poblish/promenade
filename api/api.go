@@ -46,6 +46,7 @@ type PrometheusMetricsImpl struct {
 	registry         prometheus.Registerer
 	metricNamePrefix string
 	descriptions     MetricDescriptions
+	errorCounterLock sync.Mutex // guards errorCounter's lazy creation
 	errorCounter     *prometheus.CounterVec
 	errorCounterName string
 	registrations    MetricRegistrations

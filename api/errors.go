@@ -16,8 +16,10 @@ func (p *PrometheusMetricsImpl) incrementError(name string) ErrorCounter {
 	return ErrorCounter{promMetric: counter}
 }
 
-// FIXME @Synchronized
 func (p *PrometheusMetricsImpl) getErrorCounter() *prometheus.CounterVec {
+	p.errorCounterLock.Lock()
+	defer p.errorCounterLock.Unlock()
+
 	if p.errorCounter == nil {
 		var adjustedName = p.metricNamePrefix + "errors"
 		var description = adjustedName
