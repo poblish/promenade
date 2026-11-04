@@ -31,11 +31,3 @@ func (p *PrometheusMetricsImpl) getErrorCounter() *prometheus.CounterVec {
 	}
 	return p.errorCounter
 }
-
-// InitErrors creates each error_type series at zero, so a first real error shows as an increase.
-func (p *PrometheusMetricsImpl) InitErrors(names ...string) {
-	counter := p.getErrorCounter()
-	for _, name := range names {
-		counter.WithLabelValues(name)
-	}
-}

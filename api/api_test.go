@@ -340,17 +340,6 @@ func TestErrorsConcurrentFirstUse(t *testing.T) {
 	}
 }
 
-func TestInitErrors(t *testing.T) {
-	metrics := NewMetrics(MetricOpts{Registry: prometheus.NewRegistry(), MetricNamePrefix: "z"})
-	metrics.InitErrors("bad", "worse")
-	metrics.Error("bad")
-
-	m := findMetric("z_errors", metrics.gatherOK(t))
-	assert.Equal(t, 2, len(m.Metric))
-	assert.Equal(t, "label:<name:\"error_type\" value:\"bad\" > counter:<value:1 >", strings.TrimSpace(m.Metric[0].String()))
-	assert.Equal(t, "label:<name:\"error_type\" value:\"worse\" > counter:<value:0 >", strings.TrimSpace(m.Metric[1].String()))
-}
-
 func TestClear(t *testing.T) {
 	metrics := NewMetrics(MetricOpts{Registry: prometheus.NewRegistry(), MetricNamePrefix: "z"})
 	doTestCounter(t, &metrics)
